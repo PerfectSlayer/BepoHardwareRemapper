@@ -5,11 +5,14 @@
 #define DEBUG
 #define modeLED 11
 
+#define NON 0
+#define MAJ 2
+#define AGR 64
 
 // function definitions
 inline void SendKeysToHost (uint8_t *buf);
 
-prog_uint8_t keyMap[] = {
+uint8_t minusKeyMap[] = {
 // Description:
 // - Index: HID input code
 // - Documentation: Related qwerty touch
@@ -19,24 +22,24 @@ prog_uint8_t keyMap[] = {
 //          The value is HID code of the touch A in azerty layout located in qwerty layout: Q
 //          So value is 20 (Q from HID code)
 // A touch (querty layout) 
-    0,    1,    2,    3,   20,   33,   54,   12,   19,    8,
+    0,    1,    2,    3,   20,   14,   27,   12,   19,    8,
 //                          A     B      C    D     E     F
-//                          A  '(2)   .(2)    I     P     E
-   16,    6,    7,   23,   22,   21,   10,    4,   15,   19,
+//                          A     K      X    I     P     E
+   16,    6,    7,   23,   22,   21,    4,   33,   15,   13,
 //  G     H     I     J     K     L     M     N     O     P
-//  ,     C     D     T     S     R     G     A     L    13
-    5,   18,   24,   36,   25,   14,   31,   27,   47,   28,
-//  Q     R     S     T     U     V      W    X     Y     Z
-//  B     O     U   è(1)    V     K   é(1)    X    ^(2)   Y
+//  q     C     D     T     S     R     Q     '     L     J
+    5,   18,   24,   36,   25,   54,   31,   28,   47,   39,
+//  Q     R     S     T     U     V     W     X     Y     Z
+//  B     O     U     è     V     .     é     Y     ^     à
    32,   32,   32,   34,   45,   39,   46,   35,   55,   50,
 //  1     2     3     4     5     6     7     8     9     0
 //  "     "     "     (     )     @     +     -     /     *
-   40,   41,   42,   43,   44,   46,   52,   26,   29,   49,
-//                                -     =     [     ]
-//                                =     %     Z     W
-   50,   17,   51,   53,   11,    9,   38,   57,   58,   59,
-//  <     ;    '            ,     .     /
-//        N    M            H     F   ç(2)
+   40,   41,   42,   43,   44,   46,   52,   26,   29,   38,
+//                                -     =     [     ]     \
+//                                =     %     Z     W     ç
+   50,   17,   51,   53,   10,   11,    9,   57,   58,   59,
+//  <     ;    '            M     ,     .
+//        N    M            G     H     F
    60,   61,   62,   63,   64,   65,   66,   67,   68,   69,
    70,   71,   72,   73,   74,   75,   76,   77,   78,   79,
    80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
@@ -45,6 +48,22 @@ prog_uint8_t keyMap[] = {
 //  <
 //à(1) 
 };
+
+uint8_t minusKeyModifierMap[] = {
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,  MAJ,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,  AGR,  MAJ,    0,  MAJ,    0,
+    0,    0,    0,    0,    0,    0,  MAJ,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
+};
+
+
 
 // (1) Force no modifier
 // (2) Force maj modifier
@@ -84,63 +103,34 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
   }
   Serial.println("");
   #endif
+  
+  // Check modifiers
+  if (buf[0] & AGR == AGR) {
+    KeyBuffer[0] = buf[0];
+    KeyBuffer[2] = buf[2];
+  } else if (buf[0] & MAJ == MAJ) {
+    KeyBuffer[0] = buf[0];
+    KeyBuffer[2] = buf[2];
+  } else {
+    KeyBuffer[0] = minusKeyModifierMap[buf[2]];
+    KeyBuffer[2] = minusKeyMap[buf[2]];
+  }
+  
+  for (i=3; i<8; i++) {
+    KeyBuffer[i] = minusKeyMap[buf[i]];
+  }
 
-  KeyBuffer[0] = buf[0];
-   
-//  if (buf[2] != 0) {
-//    KeyBuffer[2] = 0x20;
-//    KeyBuffer[0] = 0x10;
-//  } else {
-//    for (i=2; i<8; i++) {
-//      KeyBuffer[i] = buf[i];
-//    }
-//  }
-
+  #ifdef DEBUG
   Serial.print("Read: ");
   for (i=2; i<8; i++) {
-    KeyBuffer[i] = keyMap[buf[i]];
     Serial.print(KeyBuffer[i]);
     Serial.print(" ");
   }
   Serial.println("");
-   
-      
-//      // remap all keys according to the existing keymap
-//      for (i=2; i<1; i++)
-//      {
-//        // handle special case of Shift-CAPSLOCK to be ignored by the remapper
-//        if (buf[i] == KEY_CAPS_LOCK && buf[0] & 0x22)
-//        {
-//          KeyBuffer[i] = KEY_CAPS_LOCK;
-//        }
-//        else
-//        {
-//          // print the key based on the current layout
-//          if (buf[i]>=4 && buf[i] <= 57)     	// transpose of 4 becoz our array starts from 0 but A is 4
-//                                              // limit check to 57, which is the last mappable key (CAPSLOCK)
-//          {
-//            // if it was a special key of shift-CAPS, then only allow mapping if the key has been released at least once
-//            
-//              KeyBuffer[i] = pgm_read_byte(buf[i]-4);
-//           
-//          }
-//          else
-//            KeyBuffer[i] = buf[i];
-//        }
-//      }
-      
-      // send out key press
-      SendKeysToHost (KeyBuffer); 
-
-    // for (uint8_t i=0; i<8; i++)
-    // {
-        // PrintHex(KeyBuffer[i]);
-        // Serial.print(" ");
-    // }
-    // Serial.println("");
-    // Serial.println("");
-        
-
+  #endif
+  
+  // Send keys to host
+  SendKeysToHost(KeyBuffer); 
 };
 
 
