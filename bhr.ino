@@ -10,23 +10,31 @@
 inline void SendKeysToHost (uint8_t *buf);
 
 prog_uint8_t keyMap[] = {
-// HID input code
-// Related qwerty code
-// Converted azerty input code to produce bepo input
-    0,    1,    2,    3,    4,    5,    6,    7,   19,    9,
-//                                                  E
-//                                                  P
-   10,   11,    7,   13,   14,   15,   16,   17,   15,   19,
-//              I                                   O     P
-//              D                                   L    13
-    5,   18,   22,   36,   25,   25,   31,   27,   47,   29,
-//  Q     R           T     U            W          Y
-//  B     O         è(1)    V         é(1)        ^(2)
+// Description:
+// - Index: HID input code
+// - Documentation: Related qwerty touch
+// - Documentation: Related bepo touch
+// - Value: Converted azerty input related qwerty input code to produce bepo input
+// Exemple: A (bepo) is the A touch (qwerty layout) so index is 4 (from HID code)
+//          The value is HID code of the touch A in azerty layout located in qwerty layout: Q
+//          So value is 20 (Q from HID code)
+// A touch (querty layout) 
+    0,    1,    2,    3,   20,    5,    6,   12,   19,    8,
+//                          A                 D     E     F
+//                          A                 I     P     E
+   16,    6,    7,   23,   22,   21,   16,   17,   15,   19,
+//  G     H     I     J     K     L                 O     P
+//  ,     C     D     T     S     R                 L    13
+    5,   18,   24,   36,   25,   25,   31,   27,   47,   29,
+//  Q     R     S     T     U            W          Y
+//  B     O     U   è(1)    V         é(1)        ^(2)
    30,   31,   32,   33,   34,   35,   36,   37,   38,   39,
    40,   41,   42,   43,   44,   45,   46,   26,   29,   49,
 //                                            [     ]
 //                                            Z     W
-   50,   51,   52,   53,   54,   55,   56,   57,   58,   59,
+   50,   17,   51,   53,   54,   55,   56,   57,   58,   59,
+//  <     ;    '
+//        N    M
    60,   61,   62,   63,   64,   65,   66,   67,   68,   69,
    70,   71,   72,   73,   74,   75,   76,   77,   78,   79,
    80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
