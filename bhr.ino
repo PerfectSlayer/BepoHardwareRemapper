@@ -9,6 +9,7 @@
 #define CTL 1
 #define MAJ 2
 #define ALT 4
+#define WIN 8
 #define RMJ 32
 #define AGR 64
 
@@ -113,6 +114,9 @@ uint8_t capsKeyModifierMap[] = {
 // Declare the key buffer to send
 uint8_t KeyBuffer[8] = {0,0,0,0,0,0,0,0};
 
+// Remapper enable status
+boolean enabled = true;
+
 // Declare child class of parser: bepo remapper
 class KeyboardBepoRemapper : public KeyboardReportParser {
 protected:
@@ -127,6 +131,19 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
     // Return on error
     return;
   }
+  // Check enable command (CTRL+ATL+TAB)
+  if (buf[0] == (CTL | ALT) && buf[2] == 43) {
+    // Toggle enabled status
+    enabled = !enabled;
+    return;
+  }
+  // Check if remapper is enabled
+  if (!enabled) {
+    // Send original keys to host
+    SendKeysToHost(buf);
+    return;
+  }
+  
   // Declare variables
   uint8_t i;
   
