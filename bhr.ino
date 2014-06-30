@@ -125,9 +125,9 @@ uint8_t altgrKeyMap[] = {
    40,   41,   42,   43,   44,   46,   52,   26,   29,   38,
 //                                -     =     [     ]     \
 //                                                         
-   50,   17,   51,   48,   10,   11,    9,   57,   58,   59,
-//  <     ;    '      #     M     ,     .
-//                                       
+   50,   17,   51,   48,   37,   11,    9,   57,   58,   59,
+//  <     ;    '      #   spc     ,     .
+//                          _            
    60,   61,   62,   63,   64,   65,   66,   67,   68,   69,
    70,   71,   72,   73,   74,   75,   76,   77,   78,   79,
    80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
@@ -142,7 +142,7 @@ uint8_t altgrKeyModifierMap[] = {
   AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
   AGR,  AGR,  NON,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
   AGR,  NON,  MAJ,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  NON,  AGR,  AGR,  AGR,  AGR,  AGR,
   AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
   AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
   AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
