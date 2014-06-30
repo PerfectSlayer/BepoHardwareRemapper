@@ -67,7 +67,6 @@ uint8_t minusKeyModifierMap[] = {
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0
 };
 
-
 uint8_t capsKeyMap[] = {
     0,    1,    2,    3,   20,   14,   27,   12,   19,    8,
 //                          A     B      C    D     E     F
@@ -110,6 +109,47 @@ uint8_t capsKeyModifierMap[] = {
   NON,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ
 };
 
+uint8_t altgrKeyMap[] = {
+    0,    1,    2,    3,   20,   31,   46,   47,   30,    8,
+//                          A     B     C     D     E     F
+//                                ~     }     ¨     &     €
+   16,    6,    7,   23,   22,   21,    4,   33,   15,   13,
+//  G     H     I     J     K     L     M     N     O     P
+//                                                         
+   35,   18,   52,   36,   25,   54,   31,   33,   47,   37,
+//  Q     R     S     T     U     V     W     X     Y     Z
+//  |           ù                             {           \
+   32,  100,  100,   34,   45,   39,   46,   35,   55,   50,
+//  1     2     3     4     5     6     7     8     9     0
+//        <     >     [     ]                              
+   40,   41,   42,   43,   44,   46,   52,   26,   29,   38,
+//                                -     =     [     ]     \
+//                                                         
+   50,   17,   51,   48,   10,   11,    9,   57,   58,   59,
+//  <     ;    '      #     M     ,     .
+//                                       
+   60,   61,   62,   63,   64,   65,   66,   67,   68,   69,
+   70,   71,   72,   73,   74,   75,   76,   77,   78,   79,
+   80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
+   90,   91,   92,   93,   94,   95,   96,   97,   98,   99,
+   38,  101,  102,  103,  104,  105,  106,  107,  108,  109,
+//  <
+//   
+};
+
+uint8_t altgrKeyModifierMap[] = {
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  MAJ,  NON,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  NON,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  NON,  MAJ,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR
+};
 
 // Declare the key buffer to send
 uint8_t KeyBuffer[8] = {0,0,0,0,0,0,0,0};
@@ -159,7 +199,10 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
   // Map first key and its modifier
   if ((buf[0] & AGR) == AGR) {
     KeyBuffer[0] = buf[0];
-    KeyBuffer[2] = buf[2];
+    KeyBuffer[2] = altgrKeyMap[buf[2]];
+    uint8_t modifier = altgrKeyModifierMap[buf[2]];
+    ForceModifier(modifier, &KeyBuffer[0], MAJ);
+    ForceModifier(modifier, &KeyBuffer[0], AGR);
   } else if ((buf[0] & MAJ) == MAJ) {
     KeyBuffer[0] = buf[0];
     KeyBuffer[2] = capsKeyMap[buf[2]];
