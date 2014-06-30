@@ -77,12 +77,12 @@ uint8_t capsKeyMap[] = {
     5,   18,   24,   36,   25,   55,   31,   28,   47,   39,
 //  Q     R     S     T     U     V     W     X     Y     Z
 //  B     O     U     è     V     :     é     Y     ^     à
-   32,   32,   32,   34,   45,   39,   46,   35,   55,   50,
+   30,   31,   32,   33,   34,   35,   36,   37,   38,   39,
 //  1     2     3     4     5     6     7     8     9     0
-//  "     "     "     (     )     @     +     -     /     *
-   40,   41,   42,   43,   44,   46,   52,   26,   29,   38,
+//  1     2     3     4     5     6     7     8     9     0
+   40,   41,   42,   43,   44,   45,   36,   26,   29,   38,
 //                                -     =     [     ]     \
-//                                =     %     Z     W     ç
+//                                °     %     Z     W     ç
    50,   17,   51,   53,   10,   11,    9,   57,   58,   59,
 //  <     ;    '            M     ,     .
 //        N    M            G     H     F
@@ -99,8 +99,8 @@ uint8_t capsKeyModifierMap[] = {
   MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
   MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
   MAJ,  MAJ,  MAJ,  NON,  MAJ,  NON,  NON,  MAJ,  MAJ,  NON,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  AGR,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  NON,
+  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
+  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  AGR,  MAJ,  MAJ,  NON,
   MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
   MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
   MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
