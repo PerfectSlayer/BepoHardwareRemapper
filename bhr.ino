@@ -152,7 +152,7 @@ uint8_t altgrKeyModifierMap[] = {
 };
 
 // Declare the key buffer to send
-uint8_t KeyBuffer[8] = {0,0,0,0,0,0,0,0};
+uint8_t KeyBuffer[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 // Remapper enable status
 boolean enabled = true;
@@ -196,26 +196,25 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
   Serial.println("");
   #endif
   
-  // Map first key and its modifier
+  // Define map according modifier
+  uint8_t *keyMap;
+  uint8_t *keyModifierMap;
   if ((buf[0] & AGR) == AGR) {
-    KeyBuffer[0] = buf[0];
-    KeyBuffer[2] = altgrKeyMap[buf[2]];
-    uint8_t modifier = altgrKeyModifierMap[buf[2]];
-    ForceModifier(modifier, &KeyBuffer[0], MAJ);
-    ForceModifier(modifier, &KeyBuffer[0], AGR);
+    keyMap = altgrKeyMap;
+    keyModifierMap = altgrKeyModifierMap;
   } else if ((buf[0] & MAJ) == MAJ) {
-    KeyBuffer[0] = buf[0];
-    KeyBuffer[2] = capsKeyMap[buf[2]];
-    uint8_t modifier = capsKeyModifierMap[buf[2]];
-    ForceModifier(modifier, &KeyBuffer[0], MAJ);
-    ForceModifier(modifier, &KeyBuffer[0], AGR);
+    keyMap = capsKeyMap;
+    keyModifierMap = capsKeyModifierMap;
   } else {
-    KeyBuffer[0] = buf[0];
-    KeyBuffer[2] = minusKeyMap[buf[2]];
-    uint8_t modifier = minusKeyModifierMap[buf[2]];
-    ForceModifier(modifier, &KeyBuffer[0], MAJ);
-    ForceModifier(modifier, &KeyBuffer[0], AGR);
+    keyMap = minusKeyMap;
+    keyModifierMap = minusKeyModifierMap;
   }
+  // Map first key and its modifier
+  KeyBuffer[0] = buf[0];
+  KeyBuffer[2] = keyMap[buf[2]];
+  uint8_t modifier = keyModifierMap[buf[2]];
+  ForceModifier(modifier, &KeyBuffer[0], MAJ);
+  ForceModifier(modifier, &KeyBuffer[0], AGR);
   // Map other keys without modifiers
   for (i=3; i<8; i++) {
     KeyBuffer[i] = minusKeyMap[buf[i]];
