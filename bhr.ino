@@ -127,11 +127,9 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
     // Return on error
     return;
   }
-  
+  // Declare variables
   uint8_t i;
   
-
-
   #ifdef DEBUG
   // Print buffer
   for (i=0; i<8; i++) {
@@ -141,7 +139,7 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
   Serial.println("");
   #endif
   
-  // Check modifiers
+  // Map first key and its modifier
   if ((buf[0] & AGR) == AGR) {
     KeyBuffer[0] = buf[0];
     KeyBuffer[2] = buf[2];
@@ -158,7 +156,7 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
     ForceModifier(modifier, &KeyBuffer[0], MAJ);
     ForceModifier(modifier, &KeyBuffer[0], AGR);
   }
-  
+  // Map other keys without modifiers
   for (i=3; i<8; i++) {
     KeyBuffer[i] = minusKeyMap[buf[i]];
   }
@@ -176,6 +174,7 @@ void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t 
   SendKeysToHost(KeyBuffer); 
 };
 
+// Force a modifier from source to dest
 inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
   if ((*dest & modifier) != (source & modifier)) {
     if ((source & modifier) == 0) {
@@ -186,6 +185,7 @@ inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
     }
 }
 
+// Send modifier and keys to host
 inline void SendKeysToHost (uint8_t *buf) {
   Keyboard.set_modifier(buf[0]);
   Keyboard.set_key1(buf[2]);
