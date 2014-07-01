@@ -267,9 +267,7 @@ KeyboardBepoRemapper remapper;
 
 // Main program setup
 void setup() {
-    randomSeed(analogRead(0));
-
-    // initialize the digital pin as an output.
+    // Initialize the digital pin as an output
     pinMode(modeLED, OUTPUT);  
     Keyboard.begin();
 
@@ -295,4 +293,3 @@ void setup() {
 void loop() {
     Usb.Task();
 }
-
