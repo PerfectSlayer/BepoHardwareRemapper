@@ -13,7 +13,7 @@
 #define AGR 64
 
 // function definitions
-inline void SendKeysToHost (uint8_t *buf);
+inline void SendKeysToHost(uint8_t *buf);
 
 uint8_t minusKeyMap[] = {
 // Description:
@@ -150,102 +150,196 @@ uint8_t altgrKeyModifierMap[] = {
   AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
 };
 
-// Declare the key buffer to send
-uint8_t KeyBuffer[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+class PressedKey {
+public:
+  uint8_t inputKey;  // TODO final
+  uint8_t key;       // TODO final
+  uint8_t modifier;  // TODO final
+public:
+  PressedKey();
+  PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier);
+};
 
-// Remapper enable status
-boolean enabled = true;
+PressedKey::PressedKey() : inputKey(0), key(0), modifier(NON) { };
+PressedKey::PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier) : inputKey(pInputKey), key(pKey), modifier(pModifier) { };
 
 // Declare child class of parser: bepo remapper
 class KeyboardBepoRemapper : public KeyboardReportParser {
 protected:
-  virtual void Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t *buf);
+  // Remapper enable status
+  boolean enabled;
+  // Key buffer to send
+  uint8_t keyBuffer[8];
+  // Pressed keys
+  PressedKey pressedKeys[6];
+public:
+  KeyboardBepoRemapper();
+protected:
+  virtual void OnKeyDown(uint8_t mod, uint8_t key);
+  virtual void OnKeyUp(uint8_t mod, uint8_t key);
+  virtual void OnControlKeysChanged(uint8_t before, uint8_t after);  
+  // void applyMod(uint8_t mod);
 };
 
+KeyboardBepoRemapper::KeyboardBepoRemapper() : enabled(true) {
+  keyBuffer[0] = 0;
+  keyBuffer[1] = 0;
+  keyBuffer[2] = 0;
+  keyBuffer[3] = 0;
+  keyBuffer[4] = 0;
+  keyBuffer[5] = 0;
+  keyBuffer[6] = 0;
+  keyBuffer[7] = 0;
+}
 
-// Declare parse method of the remapper
-void KeyboardBepoRemapper::Parse(HID *hid, bool is_rpt_id, uint8_t len, uint8_t *buf) {
-  // Check error
-  if (buf[2] == 1) {
-    // Return on error
-    return;
-  }
-  // Check enable command (CTRL+ATL+TAB)
-  if (buf[0] == (CTL | ALT) && buf[2] == 43) {
-    // Toggle enabled status
-    enabled = !enabled;
-    return;
-  }
-  // Check if remapper is enabled
-  if (!enabled) {
-    // Send original keys to host
-    SendKeysToHost(buf);
-    return;
-  }
-  
-  // Declare variables
-  uint8_t i;
-  
-  #ifdef DEBUG
+void KeyboardBepoRemapper::OnKeyDown(uint8_t mod, uint8_t key) {
+
+#ifdef DEBUG
   // Print buffer
-  Serial.print("Input:  ");
-  for (i=0; i<8; i++) {
-    Serial.print(buf[i]);
-    Serial.print(" ");
-  }
+  Serial.print("KeyDown: ");
+  Serial.print(key);
   Serial.println("");
-  #endif
-  
+#endif
+
   // Define map according modifier
   uint8_t *keyMap;
   uint8_t *keyModifierMap;
-  if ((buf[0] & AGR) == AGR) {
+  if ((mod & AGR) == AGR) {
     keyMap = altgrKeyMap;
     keyModifierMap = altgrKeyModifierMap;
-  } else if ((buf[0] & MAJ) == MAJ) {
+  } else if ((mod & MAJ) == MAJ) {
     keyMap = capsKeyMap;
     keyModifierMap = capsKeyModifierMap;
   } else {
     keyMap = minusKeyMap;
     keyModifierMap = minusKeyModifierMap;
   }
-  // Map first key and its modifier
-  KeyBuffer[0] = buf[0];
-  KeyBuffer[2] = keyMap[buf[2]];
-  uint8_t modifier = keyModifierMap[buf[2]];
-  ForceModifier(modifier, &KeyBuffer[0], MAJ);
-  ForceModifier(modifier, &KeyBuffer[0], AGR);
-  // Map other keys without modifiers
-  for (i=3; i<8; i++) {
-    KeyBuffer[i] = minusKeyMap[buf[i]];
+  // Map key and its modifier
+  uint8_t inputKey = key;
+  key = keyMap[key];
+  uint8_t keyModifier = keyModifierMap[key];
+  // Look for free slot in key buffer
+  for (int index = 0; index < 6; index++) {
+    // Check if slot is empty
+    if (keyBuffer[2+index] == 0) {
+      // Check first slot
+      if (index == 0) {
+        // Compute merged modifiers (key + user)
+        ForceModifier(keyModifier, &mod, MAJ);
+        ForceModifier(keyModifier, &mod, AGR);
+        // Apply modifier
+        keyBuffer[0] = mod;
+      }
+      // Store mapped key
+      keyBuffer[2+index] = key;
+      // Store key pressed
+      PressedKey pressedKey(inputKey, key, keyModifier);
+      pressedKeys[index] = pressedKey;
+      // Send keys
+      SendKeysToHost(keyBuffer);
+      // Stop looking for
+      break;
+    }
   }
-
-  #ifdef DEBUG
-  Serial.print("Output: ");
-  for (i=0; i<8; i++) {
-    Serial.print(KeyBuffer[i]);
-    Serial.print(" ");
-  }
+ 
+#ifdef DEBUG
+  // Print buffer
+  Serial.print("KeyDown[converted]: ");
+  Serial.print(key);
   Serial.println("");
-  #endif
-  
-  // Send keys to host
-  SendKeysToHost(KeyBuffer); 
-};
+#endif
+}
+
+void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
+#ifdef DEBUG
+  // Print buffer
+  Serial.print("KeyUp: ");
+  Serial.print(key);
+  Serial.println("");
+#endif
+
+  // Declare key buffer change status
+  boolean changed = false;
+  // Look for pressed key
+  for (int index = 0; index < 6; index++) {
+    // Check pressed key by input key
+    if (pressedKeys[index].inputKey == key) {
+      // Create cleared key
+      PressedKey clearedKey(0, 0, NON);
+      // Reset pressed key
+      pressedKeys[index] = clearedKey;
+      // Reset key buffer
+      keyBuffer[2+index] = 0;
+      // Check first pressed key
+      if (index == 0) {
+        // Get first pressed key modifiers
+        mod = keyBuffer[0];
+        // Check first pressed key modifier to remove it
+        if ((pressedKeys[index].modifier & MAJ) == MAJ) {
+          ForceModifier(0, &mod, MAJ);
+        }
+        if ((pressedKeys[index].modifier & AGR) == AGR) {
+          ForceModifier(0, &mod, AGR);
+        }
+        // Update modifiers
+        keyBuffer[0] = mod;
+      }
+      // Mark key buffer as changed
+      changed = true;
+    }
+  }
+  // Check if key buffer has changed
+  if (changed) {
+    // Send keys
+    SendKeysToHost(keyBuffer);
+  }
+}
+
+void KeyboardBepoRemapper::OnControlKeysChanged(uint8_t before, uint8_t after) {
+  // Check first pressed key
+  PressedKey firstPressedKey = pressedKeys[0];
+  if (firstPressedKey.key != 0 && firstPressedKey.modifier != NON) {
+    // Apply pressed key modifiers
+    ForceModifier(firstPressedKey.modifier, &after, MAJ);
+    ForceModifier(firstPressedKey.modifier, &after, AGR);
+  }
+  // Apply modifiers
+  keyBuffer[0] = after;
+  // Send keys
+  SendKeysToHost(keyBuffer);
+}
 
 // Force a modifier from source to dest
 inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
   if ((*dest & modifier) != (source & modifier)) {
     if ((source & modifier) == 0) {
-        *dest-= modifier;
-      } else {
-        *dest+= modifier;
-      }
+      *dest-= modifier;
+    } else {
+      *dest+= modifier;
     }
+  }
 }
 
 // Send modifier and keys to host
 inline void SendKeysToHost (uint8_t *buf) {
+#ifdef DEBUG
+  // Print buffer
+  Serial.print("SendKeys: ");
+  Serial.print(buf[0]);
+  Serial.print(":");
+  Serial.print(buf[2]);
+  Serial.print(" ");
+  Serial.print(buf[3]);
+  Serial.print(" ");
+  Serial.print(buf[4]);
+  Serial.print(" ");
+  Serial.print(buf[5]);
+  Serial.print(" ");
+  Serial.print(buf[6]);
+  Serial.print(" ");
+  Serial.print(buf[7]);
+  Serial.println("");
+#endif
   Keyboard.set_modifier(buf[0]);
   Keyboard.set_key1(buf[2]);
   Keyboard.set_key2(buf[3]);
@@ -256,8 +350,6 @@ inline void SendKeysToHost (uint8_t *buf) {
   Keyboard.send_now();
 }
 
-
-  
 USB Usb;
 //USBHub     Hub(&Usb);
 HIDBoot<HID_PROTOCOL_KEYBOARD> ExtKeyboard(&Usb);
@@ -267,29 +359,30 @@ KeyboardBepoRemapper remapper;
 
 // Main program setup
 void setup() {
-    // Initialize the digital pin as an output
-    pinMode(modeLED, OUTPUT);  
-    Keyboard.begin();
+  // Initialize the digital pin as an output
+  pinMode(modeLED, OUTPUT);  
+  Keyboard.begin();
 
 #ifdef DEBUG
-    Serial.begin(115200);
-    while(!Serial);
-    Serial.println("Start v1");
+  Serial.begin(115200);
+  while(!Serial);
+  Serial.println("Start v2");
 #endif
 
-    if (Usb.Init() == -1) {
+  if (Usb.Init() == -1) {
 #ifdef DEBUG
-        Serial.println("OSC did not start.");
+    Serial.println("OSC did not start.");
 #else
-        delay(1);
+    delay(1);
 #endif
-    }
+  }
 
-    delay(200);
-    ExtKeyboard.SetReportParser(0, (HIDReportParser*)&remapper);
+  delay(200);
+  ExtKeyboard.SetReportParser(0, (HIDReportParser*)&remapper);
 }
 
 // Main program loop
 void loop() {
-    Usb.Task();
+  Usb.Task();
 }
+
