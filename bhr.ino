@@ -192,22 +192,22 @@ KeyboardBepoRemapper::KeyboardBepoRemapper() : enabled(true) {
   keyBuffer[7] = 0;
 }
 
-void KeyboardBepoRemapper::OnKeyDown(uint8_t mod, uint8_t key) {
+void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
 
 #ifdef DEBUG
   // Print buffer
   Serial.print("KeyDown: ");
-  Serial.print(key);
+  Serial.print(inputKey);
   Serial.println("");
 #endif
 
   // Define map according modifier
   uint8_t *keyMap;
   uint8_t *keyModifierMap;
-  if ((mod & AGR) == AGR) {
+  if ((inputMod & AGR) == AGR) {
     keyMap = altgrKeyMap;
     keyModifierMap = altgrKeyModifierMap;
-  } else if ((mod & MAJ) == MAJ) {
+  } else if ((inputMod & MAJ) == MAJ) {
     keyMap = capsKeyMap;
     keyModifierMap = capsKeyModifierMap;
   } else {
@@ -215,15 +215,15 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t mod, uint8_t key) {
     keyModifierMap = minusKeyModifierMap;
   }
   // Map key and its modifier
-  uint8_t inputKey = key;
-  key = keyMap[key];
-  uint8_t keyModifier = keyModifierMap[key];
+  uint8_t key = keyMap[inputKey];
+  uint8_t keyModifier = keyModifierMap[inputKey];
   // Look for free slot in key buffer
   for (int index = 0; index < 6; index++) {
     // Check if slot is empty
     if (keyBuffer[2+index] == 0) {
       // Check first slot
       if (index == 0) {
+        uint8_t mod = inputMod;
         // Compute merged modifiers (key + user)
         ForceModifier(keyModifier, &mod, MAJ);
         ForceModifier(keyModifier, &mod, AGR);
