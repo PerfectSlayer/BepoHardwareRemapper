@@ -201,22 +201,39 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
   Serial.println("");
 #endif
 
-  // Define map according modifier
-  uint8_t *keyMap;
-  uint8_t *keyModifierMap;
-  if ((inputMod & AGR) == AGR) {
-    keyMap = altgrKeyMap;
-    keyModifierMap = altgrKeyModifierMap;
-  } else if ((inputMod & MAJ) == MAJ) {
-    keyMap = capsKeyMap;
-    keyModifierMap = capsKeyModifierMap;
-  } else {
-    keyMap = minusKeyMap;
-    keyModifierMap = minusKeyModifierMap;
+  // Check enable / disable command (CTRL + ALT + TAB)
+  if ((inputMod & (CTRL | ALT)) == (CTRL | ALT) && inputKey == 43) {
+    // Toggle enabled status
+    enabled = !enabled;
+    return;
   }
-  // Map key and its modifier
-  uint8_t key = keyMap[inputKey];
-  uint8_t keyModifier = keyModifierMap[inputKey];
+  // Declare key and keyModifier to send
+  uint8_t key;
+  uint8_t keyModifier;
+  // Check if remapper is enabled
+  if (enabled) {
+    // Define map according modifier
+    uint8_t *keyMap;
+    uint8_t *keyModifierMap;
+    if ((inputMod & AGR) == AGR) {
+      keyMap = altgrKeyMap;
+      keyModifierMap = altgrKeyModifierMap;
+    } else if ((inputMod & MAJ) == MAJ) {
+      keyMap = capsKeyMap;
+      keyModifierMap = capsKeyModifierMap;
+    } else {
+      keyMap = minusKeyMap;
+      keyModifierMap = minusKeyModifierMap;
+    }
+    // Map key and its modifier
+    key = keyMap[inputKey];
+    keyModifier = keyModifierMap[inputKey];
+  } else {
+    // Use input if not enabled
+    key = inputKey;
+    // No key modifier to apply
+    keyModifier = NON;
+  }
   // Look for free slot in key buffer
   for (int index = 0; index < 6; index++) {
     // Check if slot is empty
@@ -251,6 +268,7 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
 }
 
 void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
+
 #ifdef DEBUG
   // Print buffer
   Serial.print("KeyUp: ");
@@ -265,7 +283,7 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
     // Check pressed key by input key
     if (pressedKeys[index].inputKey == key) {
       // Create cleared key
-      PressedKey clearedKey(0, 0, NON);
+      PressedKey clearedKey(0, 0, NON);  // TODO constant of class
       // Reset pressed key
       pressedKeys[index] = clearedKey;
       // Reset key buffer
@@ -322,6 +340,7 @@ inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
 
 // Send modifier and keys to host
 inline void SendKeysToHost (uint8_t *buf) {
+
 #ifdef DEBUG
   // Print buffer
   Serial.print("SendKeys: ");
@@ -340,6 +359,7 @@ inline void SendKeysToHost (uint8_t *buf) {
   Serial.print(buf[7]);
   Serial.println("");
 #endif
+
   Keyboard.set_modifier(buf[0]);
   Keyboard.set_key1(buf[2]);
   Keyboard.set_key2(buf[3]);
