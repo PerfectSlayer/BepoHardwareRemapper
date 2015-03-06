@@ -4,13 +4,15 @@
 #define DEBUG
 #define modeLED 11
 
-#define NON 0
-#define CTL 1
-#define MAJ 2
+#define NONE 0
+#define CTRL 1
+#define SHIFT 2
 #define ALT 4
 #define WIN 8
-#define RMJ 32
-#define AGR 64
+#define RCTRL 16
+#define RSHIFT 32
+#define RALT 64
+#define RWIN 128
 
 // function definitions
 inline void SendKeysToHost(uint8_t *buf);
@@ -53,17 +55,17 @@ uint8_t minusKeyMap[] = {
 };
 
 uint8_t minusKeyModifierMap[] = {
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  MAJ,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  AGR,  MAJ,  NON,  MAJ,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  MAJ,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
-  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,  NON,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE,SHIFT, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, RALT,SHIFT, NONE,SHIFT, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE,SHIFT, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+ NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
 };
 
 uint8_t capsKeyMap[] = {
@@ -95,17 +97,17 @@ uint8_t capsKeyMap[] = {
 };
 
 uint8_t capsKeyModifierMap[] = {
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  NON,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  NON,  MAJ,  NON,  NON,  MAJ,  NON,  NON,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  AGR,  MAJ,  MAJ,  NON,
-  MAJ,  MAJ,  MAJ,  AGR,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
-  NON,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,  MAJ,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+ NONE,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT, NONE,SHIFT, NONE, NONE,SHIFT, NONE, NONE,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT, RALT,SHIFT,SHIFT, NONE,
+SHIFT,SHIFT,SHIFT, RALT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
+ NONE,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,
 };
 
 uint8_t altgrKeyMap[] = {
@@ -137,17 +139,17 @@ uint8_t altgrKeyMap[] = {
 };
 
 uint8_t altgrKeyModifierMap[] = {
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  MAJ,  NON,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  NON,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  NON,  MAJ,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  NON,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
-  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,  AGR,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT,SHIFT, NONE, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, NONE, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, NONE,SHIFT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, NONE, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
+ RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
 };
 
 class PressedKey {
@@ -160,7 +162,7 @@ public:
   PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier);
 };
 
-PressedKey::PressedKey() : inputKey(0), key(0), modifier(NON) { };
+PressedKey::PressedKey() : inputKey(0), key(0), modifier(NONE) { };
 PressedKey::PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier) : inputKey(pInputKey), key(pKey), modifier(pModifier) { };
 
 // Declare child class of parser: bepo remapper
@@ -215,10 +217,10 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
     // Define map according modifier
     uint8_t *keyMap;
     uint8_t *keyModifierMap;
-    if ((inputMod & AGR) == AGR) {
+    if ((inputMod & RALT) == RALT) {
       keyMap = altgrKeyMap;
       keyModifierMap = altgrKeyModifierMap;
-    } else if ((inputMod & MAJ) == MAJ) {
+    } else if ((inputMod & SHIFT) == SHIFT) {
       keyMap = capsKeyMap;
       keyModifierMap = capsKeyModifierMap;
     } else {
@@ -232,7 +234,7 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
     // Use input if not enabled
     key = inputKey;
     // No key modifier to apply
-    keyModifier = NON;
+    keyModifier = NONE;
   }
   // Look for free slot in key buffer
   for (int index = 0; index < 6; index++) {
@@ -242,8 +244,8 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
       if (index == 0) {
         uint8_t mod = inputMod;
         // Compute merged modifiers (key + user)
-        ForceModifier(keyModifier, &mod, MAJ);
-        ForceModifier(keyModifier, &mod, AGR);
+        ForceModifier(keyModifier, &mod, SHIFT);
+        ForceModifier(keyModifier, &mod, RALT);
         // Apply modifier
         keyBuffer[0] = mod;
       }
@@ -283,7 +285,7 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
     // Check pressed key by input key
     if (pressedKeys[index].inputKey == key) {
       // Create cleared key
-      PressedKey clearedKey(0, 0, NON);  // TODO constant of class
+      PressedKey clearedKey(0, 0, NONE);  // TODO constant of class
       // Reset pressed key
       pressedKeys[index] = clearedKey;
       // Reset key buffer
@@ -293,11 +295,11 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
         // Get first pressed key modifiers
         mod = keyBuffer[0];
         // Check first pressed key modifier to remove it
-        if ((pressedKeys[index].modifier & MAJ) == MAJ) {
-          ForceModifier(0, &mod, MAJ);
+        if ((pressedKeys[index].modifier & SHIFT) == SHIFT) {
+          ForceModifier(0, &mod, SHIFT);
         }
-        if ((pressedKeys[index].modifier & AGR) == AGR) {
-          ForceModifier(0, &mod, AGR);
+        if ((pressedKeys[index].modifier & RALT) == RALT) {
+          ForceModifier(0, &mod, RALT);
         }
         // Update modifiers
         keyBuffer[0] = mod;
@@ -316,10 +318,10 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
 void KeyboardBepoRemapper::OnControlKeysChanged(uint8_t before, uint8_t after) {
   // Check first pressed key
   PressedKey firstPressedKey = pressedKeys[0];
-  if (firstPressedKey.key != 0 && firstPressedKey.modifier != NON) {
+  if (firstPressedKey.key != 0 && firstPressedKey.modifier != NONE) {
     // Apply pressed key modifiers
-    ForceModifier(firstPressedKey.modifier, &after, MAJ);
-    ForceModifier(firstPressedKey.modifier, &after, AGR);
+    ForceModifier(firstPressedKey.modifier, &after, SHIFT);
+    ForceModifier(firstPressedKey.modifier, &after, RALT);
   }
   // Apply modifiers
   keyBuffer[0] = after;
