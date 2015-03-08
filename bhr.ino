@@ -14,8 +14,6 @@
 #define RALT 64
 #define RWIN 128
 
-// function definitions
-inline void SendKeysToHost(uint8_t *buf);
 
 uint8_t minusKeyMap[] = {
 // Description:
@@ -151,39 +149,90 @@ uint8_t altgrKeyModifierMap[] = {
  RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
  RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT, RALT,
 };
-
+/**
+ * Store pressed key and its modifier according input key.
+ */
 class PressedKey {
 public:
-  uint8_t inputKey;  // TODO final
-  uint8_t key;       // TODO final
-  uint8_t modifier;  // TODO final
+  /** The input key. */
+  uint8_t inputKey;
+  /** The pressed key. */
+  uint8_t key;
+  /** The pressed key modifiers. */
+  uint8_t modifier;
 public:
+  /**
+   * Default constructor.
+   */
   PressedKey();
+  /**
+   * Key pressed constructor.
+   *
+   * @param pInputKey The input key.
+   * @param pKey      The pressed key.
+   * @param pModifier The pressed key modifiers.
+   */
   PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier);
 };
 
 PressedKey::PressedKey() : inputKey(0), key(0), modifier(NONE) { };
 PressedKey::PressedKey(uint8_t pInputKey, uint8_t pKey, uint8_t pModifier) : inputKey(pInputKey), key(pKey), modifier(pModifier) { };
 
-// Declare child class of parser: bepo remapper
+/**
+ * Keyboard report parser to remap keys as bépo layout.
+ */
 class KeyboardBepoRemapper : public KeyboardReportParser {
 protected:
-  // Remapper enable status
+  /** Remapper enable status. */
   boolean enabled;
-  // Key buffer to send
+  /** Key buffer to send. */
   uint8_t keyBuffer[8];
-  // Pressed keys
+  /** Pressed keys. */
   PressedKey pressedKeys[6];
 public:
+  /**
+   * Default constructor.
+   */
   KeyboardBepoRemapper();
 protected:
+  /**
+   * Key down callback.
+   *
+   * @param mod The key down modifiers.
+   * @param key The key down.
+   */
   virtual void OnKeyDown(uint8_t mod, uint8_t key);
-  virtual void OnKeyUp(uint8_t mod, uint8_t key);
-  virtual void OnControlKeysChanged(uint8_t before, uint8_t after);  
-  // void applyMod(uint8_t mod);
+  /**
+   * Key up callback.
+   *
+   * @param mod The key up modifiers.
+   * @param key The key up.
+   */
+  virtual void OnKeyUp(uint8_t mod, uint8_t key);  
+  /**
+   * Control key change callback.
+   *
+   * @param before The previous modifiers.
+   * @param after  The current modifiers.
+   */
+  virtual void OnControlKeysChanged(uint8_t before, uint8_t after);
+private:
+  /**
+   * Force a modifier from source to dest.
+   *
+   * @param source   The source to read modifier value.
+   * @param dest     The destination to apply modifier value.
+   * @param modifier The modifier to apply.
+   */
+  const void forceModifier(uint8_t source, uint8_t *dest, uint8_t modifier);
+  /**
+   * Send buffer keys.
+   */
+  const void sendKeys();
 };
 
 KeyboardBepoRemapper::KeyboardBepoRemapper() : enabled(true) {
+  // Initialize key buffer
   keyBuffer[0] = 0;
   keyBuffer[1] = 0;
   keyBuffer[2] = 0;
@@ -244,8 +293,8 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
       if (index == 0) {
         uint8_t mod = inputMod;
         // Compute merged modifiers (key + user)
-        ForceModifier(keyModifier, &mod, SHIFT);
-        ForceModifier(keyModifier, &mod, RALT);
+        forceModifier(keyModifier, &mod, SHIFT);
+        forceModifier(keyModifier, &mod, RALT);
         // Apply modifier
         keyBuffer[0] = mod;
       }
@@ -255,7 +304,7 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
       PressedKey pressedKey(inputKey, key, keyModifier);
       pressedKeys[index] = pressedKey;
       // Send keys
-      SendKeysToHost(keyBuffer);
+      sendKeys();
       // Stop looking for
       break;
     }
@@ -285,7 +334,7 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
     // Check pressed key by input key
     if (pressedKeys[index].inputKey == key) {
       // Create cleared key
-      PressedKey clearedKey(0, 0, NONE);  // TODO constant of class
+      PressedKey clearedKey(0, 0, NONE);
       // Reset pressed key
       pressedKeys[index] = clearedKey;
       // Reset key buffer
@@ -296,10 +345,10 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
         mod = keyBuffer[0];
         // Check first pressed key modifier to remove it
         if ((pressedKeys[index].modifier & SHIFT) == SHIFT) {
-          ForceModifier(0, &mod, SHIFT);
+          forceModifier(0, &mod, SHIFT);
         }
         if ((pressedKeys[index].modifier & RALT) == RALT) {
-          ForceModifier(0, &mod, RALT);
+          forceModifier(0, &mod, RALT);
         }
         // Update modifiers
         keyBuffer[0] = mod;
@@ -311,7 +360,7 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
   // Check if key buffer has changed
   if (changed) {
     // Send keys
-    SendKeysToHost(keyBuffer);
+    sendKeys();
   }
 }
 
@@ -320,17 +369,16 @@ void KeyboardBepoRemapper::OnControlKeysChanged(uint8_t before, uint8_t after) {
   PressedKey firstPressedKey = pressedKeys[0];
   if (firstPressedKey.key != 0 && firstPressedKey.modifier != NONE) {
     // Apply pressed key modifiers
-    ForceModifier(firstPressedKey.modifier, &after, SHIFT);
-    ForceModifier(firstPressedKey.modifier, &after, RALT);
+    forceModifier(firstPressedKey.modifier, &after, SHIFT);
+    forceModifier(firstPressedKey.modifier, &after, RALT);
   }
   // Apply modifiers
   keyBuffer[0] = after;
   // Send keys
-  SendKeysToHost(keyBuffer);
+  sendKeys();
 }
 
-// Force a modifier from source to dest
-inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
+const void KeyboardBepoRemapper::forceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
   if ((*dest & modifier) != (source & modifier)) {
     if ((source & modifier) == 0) {
       *dest-= modifier;
@@ -340,35 +388,38 @@ inline void ForceModifier(uint8_t source, uint8_t *dest, uint8_t modifier) {
   }
 }
 
-// Send modifier and keys to host
-inline void SendKeysToHost (uint8_t *buf) {
+const void KeyboardBepoRemapper::sendKeys() {
 
 #ifdef DEBUG
-  // Print buffer
+  // Print key buffer
   Serial.print("SendKeys: ");
-  Serial.print(buf[0]);
+  Serial.print(keyBuffer[0]);
   Serial.print(":");
-  Serial.print(buf[2]);
+  Serial.print(keyBuffer[2]);
   Serial.print(" ");
-  Serial.print(buf[3]);
+  Serial.print(keyBuffer[3]);
   Serial.print(" ");
-  Serial.print(buf[4]);
+  Serial.print(keyBuffer[4]);
   Serial.print(" ");
-  Serial.print(buf[5]);
+  Serial.print(keyBuffer[5]);
   Serial.print(" ");
-  Serial.print(buf[6]);
+  Serial.print(keyBuffer[6]);
   Serial.print(" ");
-  Serial.print(buf[7]);
+  Serial.print(keyBuffer[7]);
   Serial.println("");
 #endif
 
-  Keyboard.set_modifier(buf[0]);
-  Keyboard.set_key1(buf[2]);
-  Keyboard.set_key2(buf[3]);
-  Keyboard.set_key3(buf[4]);
-  Keyboard.set_key4(buf[5]);
-  Keyboard.set_key5(buf[6]);
-  Keyboard.set_key6(buf[7]);
+  // Set modifier
+  Keyboard.set_modifier(keyBuffer[0]);
+  // Skip error
+  // Set keys
+  Keyboard.set_key1(keyBuffer[2]);
+  Keyboard.set_key2(keyBuffer[3]);
+  Keyboard.set_key3(keyBuffer[4]);
+  Keyboard.set_key4(keyBuffer[5]);
+  Keyboard.set_key5(keyBuffer[6]);
+  Keyboard.set_key6(keyBuffer[7]);
+  // Send keys
   Keyboard.send_now();
 }
 
