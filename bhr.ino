@@ -333,12 +333,6 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
   for (int index = 0; index < 6; index++) {
     // Check pressed key by input key
     if (pressedKeys[index].inputKey == key) {
-      // Create cleared key
-      PressedKey clearedKey(0, 0, NONE);
-      // Reset pressed key
-      pressedKeys[index] = clearedKey;
-      // Reset key buffer
-      keyBuffer[2+index] = 0;
       // Check first pressed key
       if (index == 0) {
         // Get first pressed key modifiers
@@ -353,6 +347,12 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
         // Update modifiers
         keyBuffer[0] = mod;
       }
+      // Create cleared key
+      PressedKey clearedKey(0, 0, NONE);
+      // Reset pressed key
+      pressedKeys[index] = clearedKey;
+      // Reset key buffer
+      keyBuffer[2+index] = 0;
       // Mark key buffer as changed
       changed = true;
     }
