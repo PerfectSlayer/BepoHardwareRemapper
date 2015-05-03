@@ -285,7 +285,7 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
     // Use input if not enabled
     key = inputKey;
     // No key modifier to apply
-    keyModifier = NONE;
+    keyModifier = inputMod;
   }
   // Look for free slot in key buffer
   for (int index = 0; index < 6; index++) {
