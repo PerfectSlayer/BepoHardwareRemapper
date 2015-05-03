@@ -189,6 +189,8 @@ protected:
   uint8_t keyBuffer[8];
   /** Pressed keys. */
   PressedKey pressedKeys[6];
+  /** Last pressed key index. */
+  uint8_t lastPressedKeyIndex;
 public:
   /**
    * Default constructor.
@@ -231,7 +233,7 @@ private:
   const void sendKeys();
 };
 
-KeyboardBepoRemapper::KeyboardBepoRemapper() : enabled(true) {
+KeyboardBepoRemapper::KeyboardBepoRemapper() : enabled(true), lastPressedKeyIndex(-1) {
   // Initialize key buffer
   keyBuffer[0] = 0;
   keyBuffer[1] = 0;
@@ -289,20 +291,35 @@ void KeyboardBepoRemapper::OnKeyDown(uint8_t inputMod, uint8_t inputKey) {
   for (int index = 0; index < 6; index++) {
     // Check if slot is empty
     if (keyBuffer[2+index] == 0) {
-      // Check first slot
-      if (index == 0) {
-        uint8_t mod = inputMod;
-        // Compute merged modifiers (key + user)
-        forceModifier(keyModifier, &mod, SHIFT);
-        forceModifier(keyModifier, &mod, RALT);
-        // Apply modifier
-        keyBuffer[0] = mod;
+      // Declare modifier
+      uint8_t mod = inputMod;
+      // Check last pressed key index
+      if (lastPressedKeyIndex != -1) {
+        // Get last pressed key
+        PressedKey lastPressedKey = pressedKeys[lastPressedKeyIndex];
+        // Check last pressed key
+        if (lastPressedKey.key != 0 && lastPressedKey.modifier != NONE) {
+          // Remove last pressed key modifier
+          if ((lastPressedKey.modifier & SHIFT) == SHIFT) {
+            forceModifier(0, &mod, SHIFT);
+          }
+          if ((lastPressedKey.modifier & RALT) == RALT) {
+            forceModifier(0, &mod, RALT);
+          }
+        }
       }
+      // Compute merged modifiers (key + user)
+      forceModifier(keyModifier, &mod, SHIFT);
+      forceModifier(keyModifier, &mod, RALT);
+      // Apply modifier
+      keyBuffer[0] = mod;
       // Store mapped key
       keyBuffer[2+index] = key;
       // Store key pressed
       PressedKey pressedKey(inputKey, key, keyModifier);
       pressedKeys[index] = pressedKey;
+      // Save last key pressed index
+      lastPressedKeyIndex = index;
       // Send keys
       sendKeys();
       // Stop looking for
@@ -333,9 +350,9 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
   for (int index = 0; index < 6; index++) {
     // Check pressed key by input key
     if (pressedKeys[index].inputKey == key) {
-      // Check first pressed key
-      if (index == 0) {
-        // Get first pressed key modifiers
+      // Check last pressed key
+      if (index == lastPressedKeyIndex) {
+        // Get pressed key modifiers
         mod = keyBuffer[0];
         // Check first pressed key modifier to remove it
         if ((pressedKeys[index].modifier & SHIFT) == SHIFT) {
@@ -346,6 +363,8 @@ void KeyboardBepoRemapper::OnKeyUp(uint8_t mod, uint8_t key) {
         }
         // Update modifiers
         keyBuffer[0] = mod;
+        // Clear last key pressed index
+        lastPressedKeyIndex = -1;
       }
       // Create cleared key
       PressedKey clearedKey(0, 0, NONE);
