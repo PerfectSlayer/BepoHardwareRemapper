@@ -35,14 +35,7 @@
 
 
 static const uint8_t PROGMEM endpoint_config_table[] = {
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(DEBUG_TX_SIZE) | DEBUG_TX_BUFFER,
-	1, EP_TYPE_INTERRUPT_OUT, EP_SIZE(DEBUG_RX_SIZE) | DEBUG_RX_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER,
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(MOUSE_SIZE) | MOUSE_BUFFER,
-#ifdef JOYSTICK_INTERFACE
-	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(JOYSTICK_SIZE) | JOYSTICK_BUFFER,
-	0
-#endif
+	1, EP_TYPE_INTERRUPT_IN,  EP_SIZE(KEYBOARD_SIZE) | KEYBOARD_BUFFER
 };
 
 
@@ -122,119 +115,11 @@ static const uint8_t PROGMEM keyboard_hid_report_desc[] = {
         0xc0			// End Collection
 };
 
-// Mouse Protocol 1, HID 1.11 spec, Appendix B, page 59-60, with wheel extension
-static const uint8_t PROGMEM mouse_hid_report_desc[] = {
-        0x05, 0x01,                     // Usage Page (Generic Desktop)
-        0x09, 0x02,                     // Usage (Mouse)
-        0xA1, 0x01,                     // Collection (Application)
-        0x05, 0x09,                     //   Usage Page (Button)
-        0x19, 0x01,                     //   Usage Minimum (Button #1)
-        0x29, 0x03,                     //   Usage Maximum (Button #3)
-        0x15, 0x00,                     //   Logical Minimum (0)
-        0x25, 0x01,                     //   Logical Maximum (1)
-        0x95, 0x03,                     //   Report Count (3)
-        0x75, 0x01,                     //   Report Size (1)
-        0x81, 0x02,                     //   Input (Data, Variable, Absolute)
-        0x95, 0x01,                     //   Report Count (1)
-        0x75, 0x05,                     //   Report Size (5)
-        0x81, 0x03,                     //   Input (Constant)
-        0x05, 0x01,                     //   Usage Page (Generic Desktop)
-        0x09, 0x30,                     //   Usage (X)
-        0x09, 0x31,                     //   Usage (Y)
-        0x15, 0x81,                     //   Logical Minimum (-127)
-        0x25, 0x7F,                     //   Logical Maximum (127)
-        0x75, 0x08,                     //   Report Size (8),
-        0x95, 0x02,                     //   Report Count (2),
-        0x81, 0x06,                     //   Input (Data, Variable, Relative)
-        0x09, 0x38,                     //   Usage (Wheel)
-        0x95, 0x01,                     //   Report Count (1),
-        0x81, 0x06,                     //   Input (Data, Variable, Relative)
-        0xC0                            // End Collection
-};
-
-#ifdef JOYSTICK_INTERFACE
-static const uint8_t PROGMEM joystick_hid_report_desc[] = {
-        0x05, 0x01,                     // Usage Page (Generic Desktop)
-        0x09, 0x04,                     // Usage (Joystick)
-        0xA1, 0x01,                     // Collection (Application)
-	0x15, 0x00,			// Logical Minimum (0)
-	0x25, 0x01,			// Logical Maximum (1)
-	0x75, 0x01,			// Report Size (1)
-	0x95, 0x20,			// Report Count (32)
-	0x05, 0x09,			// Usage Page (Button)
-	0x19, 0x01,			// Usage Minimum (Button #1)
-	0x29, 0x20,			// Usage Maximum (Button #32)
-	0x81, 0x02,			// Input (variable,absolute)
-	0x15, 0x00,			// Logical Minimum (0)
-	0x25, 0x07,			// Logical Maximum (7)
-	0x35, 0x00,			// Physical Minimum (0)
-	0x46, 0x3B, 0x01,		// Physical Maximum (315)
-	0x75, 0x04,			// Report Size (4)
-	0x95, 0x01,			// Report Count (1)
-	0x65, 0x14,			// Unit (20)
-        0x05, 0x01,                     // Usage Page (Generic Desktop)
-	0x09, 0x39,			// Usage (Hat switch)
-	0x81, 0x42,			// Input (variable,absolute,null_state)
-        0x05, 0x01,                     // Usage Page (Generic Desktop)
-	0x09, 0x01,			// Usage (Pointer)
-        0xA1, 0x00,                     // Collection ()
-	0x15, 0x00,			//   Logical Minimum (0)
-	0x26, 0xFF, 0x03,		//   Logical Maximum (1023)
-	0x75, 0x0A,			//   Report Size (10)
-	0x95, 0x04,			//   Report Count (4)
-	0x09, 0x30,			//   Usage (X)
-	0x09, 0x31,			//   Usage (Y)
-	0x09, 0x32,			//   Usage (Z)
-	0x09, 0x35,			//   Usage (Rz)
-	0x81, 0x02,			//   Input (variable,absolute)
-        0xC0,                           // End Collection
-	0x15, 0x00,			// Logical Minimum (0)
-	0x26, 0xFF, 0x03,		// Logical Maximum (1023)
-	0x75, 0x0A,			// Report Size (10)
-	0x95, 0x02,			// Report Count (2)
-	0x09, 0x36,			// Usage (Slider)
-	0x09, 0x36,			// Usage (Slider)
-	0x81, 0x02,			// Input (variable,absolute)
-        0xC0                            // End Collection
-};
-#endif
-
-
-
-
-
-
-
-static const uint8_t PROGMEM debug_hid_report_desc[] = {
-        0x06, 0xC9, 0xFF,                       // Usage Page 0xFFC9 (vendor defined)
-        0x09, 0x04,                             // Usage 0x04
-        0xA1, 0x5C,                             // Collection 0x5C
-        0x75, 0x08,                             // report size = 8 bits (global)
-        0x15, 0x00,                             // logical minimum = 0 (global)
-        0x26, 0xFF, 0x00,                       // logical maximum = 255 (global)
-        0x95, DEBUG_TX_SIZE,                    // report count (global)
-        0x09, 0x75,                             // usage (local)
-        0x81, 0x02,                             // Input
-        0x95, DEBUG_RX_SIZE,                    // report count (global)
-        0x09, 0x76,                             // usage (local)
-        0x91, 0x02,                             // Output
-        0x95, 0x04,                             // report count (global)
-        0x09, 0x76,                             // usage (local)
-        0xB1, 0x02,                             // Feature
-        0xC0                                    // end collection
-};
-
 
 
 #define KEYBOARD_HID_DESC_OFFSET	( 9 + 9 )
-#define MOUSE_HID_DESC_OFFSET		( 9 + 9+9+7 + 9 )
-#define DEBUG_HID_DESC_OFFSET		( 9 + 9+9+7 + 9+9+7 + 9 )
-#ifdef JOYSTICK_INTERFACE
-#define JOYSTICK_HID_DESC_OFFSET	( 9 + 9+9+7 + 9+9+7 + 9+9+7+7 + 9 )
-#define CONFIG1_DESC_SIZE		( 9 + 9+9+7 + 9+9+7 + 9+9+7+7 + 9+9+7)
-#else
-#define CONFIG1_DESC_SIZE		( 9 + 9+9+7 + 9+9+7 + 9+9+7+7 )
-#endif
+#define CONFIG1_DESC_SIZE               ( 9 + 9+9+7+7 )
+
 
 static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
 	// configuration descriptor, USB spec 9.6.3, page 264-266, Table 9-10
@@ -273,97 +158,7 @@ static const uint8_t PROGMEM config1_descriptor[CONFIG1_DESC_SIZE] = {
         KEYBOARD_ENDPOINT | 0x80,               // bEndpointAddress
         0x03,                                   // bmAttributes (0x03=intr)
         KEYBOARD_SIZE, 0,                       // wMaxPacketSize
-        KEYBOARD_INTERVAL,                      // bInterval
-
-        // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
-        9,                                      // bLength
-        4,                                      // bDescriptorType
-        MOUSE_INTERFACE,                        // bInterfaceNumber
-        0,                                      // bAlternateSetting
-        1,                                      // bNumEndpoints
-        0x03,                                   // bInterfaceClass (0x03 = HID)
-        0x01,                                   // bInterfaceSubClass (0x01 = Boot)
-        0x02,                                   // bInterfaceProtocol (0x02 = Mouse)
-        0,                                      // iInterface
-        // HID interface descriptor, HID 1.11 spec, section 6.2.1
-        9,                                      // bLength
-        0x21,                                   // bDescriptorType
-        0x11, 0x01,                             // bcdHID
-        0,                                      // bCountryCode
-        1,                                      // bNumDescriptors
-        0x22,                                   // bDescriptorType
-        sizeof(mouse_hid_report_desc),          // wDescriptorLength
-        0,
-        // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-        7,                                      // bLength
-        5,                                      // bDescriptorType
-        MOUSE_ENDPOINT | 0x80,                  // bEndpointAddress
-        0x03,                                   // bmAttributes (0x03=intr)
-        MOUSE_SIZE, 0,                          // wMaxPacketSize
-        MOUSE_INTERVAL,                         // bInterval
-
-        // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
-        9,                                      // bLength
-        4,                                      // bDescriptorType
-        DEBUG_INTERFACE,                        // bInterfaceNumber
-        0,                                      // bAlternateSetting
-        2,                                      // bNumEndpoints
-        0x03,                                   // bInterfaceClass (0x03 = HID)
-        0x00,                                   // bInterfaceSubClass
-        0x00,                                   // bInterfaceProtocol
-        0,                                      // iInterface
-        // HID interface descriptor, HID 1.11 spec, section 6.2.1
-        9,                                      // bLength
-        0x21,                                   // bDescriptorType
-        0x11, 0x01,                             // bcdHID
-        0,                                      // bCountryCode
-        1,                                      // bNumDescriptors
-        0x22,                                   // bDescriptorType
-        sizeof(debug_hid_report_desc),          // wDescriptorLength
-        0,
-        // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-        7,                                      // bLength
-        5,                                      // bDescriptorType
-        DEBUG_TX_ENDPOINT | 0x80,               // bEndpointAddress
-        0x03,                                   // bmAttributes (0x03=intr)
-        DEBUG_TX_SIZE, 0,                       // wMaxPacketSize
-        DEBUG_TX_INTERVAL,                      // bInterval
-        // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-        7,                                      // bLength
-        5,                                      // bDescriptorType
-        DEBUG_RX_ENDPOINT,                      // bEndpointAddress
-        0x03,                                   // bmAttributes (0x03=intr)
-        DEBUG_RX_SIZE, 0,                       // wMaxPacketSize
-        DEBUG_RX_INTERVAL,                      // bInterval
-
-#ifdef JOYSTICK_INTERFACE
-        // interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
-        9,                                      // bLength
-        4,                                      // bDescriptorType
-        JOYSTICK_INTERFACE,                     // bInterfaceNumber
-        0,                                      // bAlternateSetting
-        1,                                      // bNumEndpoints
-        0x03,                                   // bInterfaceClass (0x03 = HID)
-        0x00,                                   // bInterfaceSubClass
-        0x00,                                   // bInterfaceProtocol
-        0,                                      // iInterface
-        // HID interface descriptor, HID 1.11 spec, section 6.2.1
-        9,                                      // bLength
-        0x21,                                   // bDescriptorType
-        0x11, 0x01,                             // bcdHID
-        0,                                      // bCountryCode
-        1,                                      // bNumDescriptors
-        0x22,                                   // bDescriptorType
-        sizeof(joystick_hid_report_desc),       // wDescriptorLength
-        0,
-        // endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
-        7,                                      // bLength
-        5,                                      // bDescriptorType
-        JOYSTICK_ENDPOINT | 0x80,               // bEndpointAddress
-        0x03,                                   // bmAttributes (0x03=intr)
-        12, 0,					// wMaxPacketSize
-        JOYSTICK_INTERVAL,                      // bInterval
-#endif
+        KEYBOARD_INTERVAL                      // bInterval
 };
 
 // If you're desperate for a little extra code memory, these strings
@@ -397,14 +192,6 @@ static const struct descriptor_list_struct {
 	{0x0200, 0x0000, config1_descriptor, sizeof(config1_descriptor)},
         {0x2200, KEYBOARD_INTERFACE, keyboard_hid_report_desc, sizeof(keyboard_hid_report_desc)},
         {0x2100, KEYBOARD_INTERFACE, config1_descriptor+KEYBOARD_HID_DESC_OFFSET, 9},
-        {0x2200, MOUSE_INTERFACE, mouse_hid_report_desc, sizeof(mouse_hid_report_desc)},
-        {0x2100, MOUSE_INTERFACE, config1_descriptor+MOUSE_HID_DESC_OFFSET, 9},
-        {0x2200, DEBUG_INTERFACE, debug_hid_report_desc, sizeof(debug_hid_report_desc)},
-        {0x2100, DEBUG_INTERFACE, config1_descriptor+DEBUG_HID_DESC_OFFSET, 9},
-#ifdef JOYSTICK_INTERFACE
-        {0x2200, JOYSTICK_INTERFACE, joystick_hid_report_desc, sizeof(joystick_hid_report_desc)},
-        {0x2100, JOYSTICK_INTERFACE, config1_descriptor+JOYSTICK_HID_DESC_OFFSET, 9},
-#endif
 	{0x0300, 0x0000, (const uint8_t *)&string0, 4},
 	{0x0301, 0x0409, (const uint8_t *)&string1, sizeof(STR_PRODUCT)},
 };
@@ -420,10 +207,6 @@ static const struct descriptor_list_struct {
 // zero when we are not configured, non-zero when enumerated
 volatile uint8_t usb_configuration USBSTATE;
 volatile uint8_t usb_suspended USBSTATE;
-
-// the time remaining before we transmit any partially full
-// packet, or send a zero length packet.
-volatile uint8_t debug_flush_timer USBSTATE;
 
 // byte0: which modifier keys are currently pressed
 //  1=left ctrl,    2=left shift,   4=left alt,    8=left gui
@@ -446,19 +229,6 @@ uint8_t keyboard_idle_count USBSTATE;
 
 // 1=num lock, 2=caps lock, 4=scroll lock, 8=compose, 16=kana
 volatile uint8_t keyboard_leds USBSTATE;
-
-// which buttons are currently pressed
-uint8_t mouse_buttons USBSTATE;
-
-// protocol setting from the host.  We use exactly the same report
-// either way, so this variable only stores the setting since we
-// are required to be able to report which setting is in use.
-static uint8_t mouse_protocol USBSTATE;
-
-// joystick data
-#ifdef JOYSTICK_INTERFACE
-uint8_t joystick_report_data[12] USBSTATE;
-#endif
 
 
 /**************************************************************************
@@ -484,7 +254,6 @@ void usb_init(void)
         UDCON = 0;				// enable attach resistor
 	usb_configuration = 0;
 	usb_suspended = 0;
-	debug_flush_timer = 0;
 	keyboard_report_data[0] = 0;
 	keyboard_report_data[1] = 0;
 	keyboard_report_data[2] = 0;
@@ -497,22 +266,6 @@ void usb_init(void)
 	keyboard_idle_config = 125;
 	keyboard_idle_count = 0;
 	keyboard_leds = 0;
-	mouse_buttons = 0;
-	mouse_protocol = 1;
-#ifdef JOYSTICK_INTERFACE
-	joystick_report_data[0] = 0;
-	joystick_report_data[1] = 0;
-	joystick_report_data[2] = 0;
-	joystick_report_data[3] = 0;
-	joystick_report_data[4] =  0x0F;
-	joystick_report_data[5] =  0x20;
-	joystick_report_data[6] =  0x80;
-	joystick_report_data[7] =  0x00;
-	joystick_report_data[8] =  0x02;
-	joystick_report_data[9] =  0x08;
-	joystick_report_data[10] = 0x20;
-	joystick_report_data[11] = 0x80;
-#endif
 	UDINT = 0;
         UDIEN = (1<<EORSTE)|(1<<SOFE);
 	//sei();  // init() in wiring.c does this
@@ -544,7 +297,7 @@ void usb_shutdown(void)
 //
 ISR(USB_GEN_vect)
 {
-	uint8_t intbits, t, i;
+	uint8_t intbits, i;
 	static uint8_t div4=0;
 
         intbits = UDINT;
@@ -558,17 +311,6 @@ ISR(USB_GEN_vect)
 		usb_configuration = 0;
         }
         if ((intbits & (1<<SOFI)) && usb_configuration) {
-                t = debug_flush_timer;
-                if (t) {
-                        debug_flush_timer = -- t;
-                        if (!t) {
-                                UENUM = DEBUG_TX_ENDPOINT;
-                                while ((UEINTX & (1<<RWAL))) {
-                                        UEDATX = 0;
-                                }
-                                UEINTX = 0x3A;
-                        }
-                }
                 if (keyboard_idle_config && (++div4 & 3) == 0) {
                         UENUM = KEYBOARD_ENDPOINT;
                         if (UEINTX & (1<<RWAL)) {
@@ -711,7 +453,6 @@ ISR(USB_COM_vect)
 		}
 		if (bRequest == SET_CONFIGURATION && bmRequestType == 0) {
 			usb_configuration = wValue;
-			debug_flush_timer = 0;
 			usb_send_in();
 			cfg = endpoint_config_table;
 			for (i=1; i<NUM_ENDPOINTS; i++) {
@@ -808,82 +549,6 @@ ISR(USB_COM_vect)
                                         return;
                                 }
                         }
-                }
-                if (wIndex == MOUSE_INTERFACE) {
-                        if (bmRequestType == 0xA1) {
-                                if (bRequest == HID_GET_REPORT) {
-                                        usb_wait_in_ready();
-                                        UEDATX = mouse_buttons;
-                                        UEDATX = 0;
-                                        UEDATX = 0;
-                                        UEDATX = 0;
-                                        usb_send_in();
-                                        return;
-                                }
-                                if (bRequest == HID_GET_PROTOCOL) {
-                                        usb_wait_in_ready();
-                                        UEDATX = mouse_protocol;
-                                        usb_send_in();
-                                        return;
-                                }
-                        }
-                        if (bmRequestType == 0x21) {
-                                if (bRequest == HID_SET_PROTOCOL) {
-                                        mouse_protocol = wValue;
-                                        usb_send_in();
-                                        return;
-                                }
-                        }
-                }
-#ifdef JOYSTICK_INTERFACE
-                if (wIndex == JOYSTICK_INTERFACE) {
-                        if (bmRequestType == 0xA1) {
-                                if (bRequest == HID_GET_REPORT) {
-                                        usb_wait_in_ready();
-					for (i=0; i<12; i++) {
-						UEDATX = joystick_report_data[i];
-					}
-                                        usb_send_in();
-                                        return;
-				}
-			}
-		}
-#endif
-                if (wIndex == DEBUG_INTERFACE) {
-                        if (bRequest == HID_GET_REPORT && bmRequestType == 0xA1) {
-                                len = wLength;
-                                do {
-                                        // wait for host ready for IN packet
-                                        do {
-                                                i = UEINTX;
-                                        } while (!(i & ((1<<TXINI)|(1<<RXOUTI))));
-                                        if (i & (1<<RXOUTI)) return;    // abort
-                                        // send IN packet
-                                        n = len < ENDPOINT0_SIZE ? len : ENDPOINT0_SIZE;
-                                        for (i = n; i; i--) {
-                                                UEDATX = 0;
-                                        }
-                                        len -= n;
-                                        usb_send_in();
-                                } while (len || n == ENDPOINT0_SIZE);
-                                return;
-                        }
-                        if (bRequest == HID_SET_REPORT && bmRequestType == 0x21) {
-				if (wValue == 0x0300 && wLength == 0x0004) {
-					uint8_t b1, b2, b3, b4;
-                                        usb_wait_receive_out();
-					b1 = UEDATX;
-					b2 = UEDATX;
-					b3 = UEDATX;
-					b4 = UEDATX;
-                                        usb_ack_out();
-                                        usb_send_in();
-					if (b1 == 0xA9 && b2 == 0x45 && b3 == 0xC2 && b4 == 0x6B)
-						_reboot_Teensyduino_();
-					if (b1 == 0x8B && b2 == 0xC5 && b3 == 0x1D && b4 == 0x70)
-						_restart_Teensyduino_();
-				}
-			}
                 }
 		if (bRequest == 0xC9 && bmRequestType == 0x40) {
 			usb_send_in();

@@ -421,163 +421,14 @@ void usb_keyboard_class::releaseAll(void)
 }
 
 
-
-void usb_mouse_class::move(int8_t x, int8_t y, int8_t wheel)
-{
-        uint8_t intr_state, timeout;
-
-        if (!usb_configuration) return;
-        if (x == -128) x = -127;
-        if (y == -128) y = -127;
-        if (wheel == -128) wheel = -127;
-        intr_state = SREG;
-        cli();
-        UENUM = MOUSE_ENDPOINT;
-        timeout = UDFNUML + 50;
-        while (1) {
-                // are we ready to transmit?
-                if (UEINTX & (1<<RWAL)) break;
-                SREG = intr_state;
-                // has the USB gone offline?
-                if (!usb_configuration) return;
-                // have we waited too long?
-                if (UDFNUML == timeout) return;
-                // get ready to try checking again
-                intr_state = SREG;
-                cli();
-                UENUM = MOUSE_ENDPOINT;
-        }
-        UEDATX = mouse_buttons;
-        UEDATX = x;
-        UEDATX = y;
-        UEDATX = wheel;
-        UEINTX = 0x3A;
-        SREG = intr_state;
-}
-
-void usb_mouse_class::click(uint8_t b)
-{
-	mouse_buttons = (b & 7);
-	move(0, 0);
-	mouse_buttons = 0;
-	move(0, 0);
-}
-
-void usb_mouse_class::scroll(int8_t wheel)
-{
-	move(0, 0, wheel);
-}
-
-void usb_mouse_class::set_buttons(uint8_t left, uint8_t middle, uint8_t right)
-{
-        uint8_t mask=0;
-
-        if (left) mask |= 1;
-        if (middle) mask |= 4;
-        if (right) mask |= 2;
-        mouse_buttons = mask;
-        move(0, 0);
-}
-
-void usb_mouse_class::press(uint8_t b)
-{
-	uint8_t prev = mouse_buttons;
-	mouse_buttons |= (b & 7);
-	if (mouse_buttons != prev) move(0, 0);
-}
-
-void usb_mouse_class::release(uint8_t b)
-{
-	uint8_t prev = mouse_buttons;
-	mouse_buttons &= ~(b & 7);
-	if (mouse_buttons != prev) move(0, 0);
-}
-
-bool usb_mouse_class::isPressed(uint8_t b)
-{
-	return ((mouse_buttons & (b & 7)) != 0);
-}
-
-
-
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB1286__)
-
-void usb_joystick_class::send_now(void)
-{
-        uint8_t intr_state, timeout;
-
-        if (!usb_configuration) return;
-        intr_state = SREG;
-        cli();
-        UENUM = JOYSTICK_ENDPOINT;
-        timeout = UDFNUML + 50;
-        while (1) {
-                // are we ready to transmit?
-                if (UEINTX & (1<<RWAL)) break;
-                SREG = intr_state;
-                // has the USB gone offline?
-                if (!usb_configuration) return;
-                // have we waited too long?
-                if (UDFNUML == timeout) return;
-                // get ready to try checking again
-                intr_state = SREG;
-                cli();
-                UENUM = JOYSTICK_ENDPOINT;
-        }
-        UEDATX = joystick_report_data[0];
-        UEDATX = joystick_report_data[1];
-        UEDATX = joystick_report_data[2];
-        UEDATX = joystick_report_data[3];
-        UEDATX = joystick_report_data[4];
-        UEDATX = joystick_report_data[5];
-        UEDATX = joystick_report_data[6];
-        UEDATX = joystick_report_data[7];
-        UEDATX = joystick_report_data[8];
-        UEDATX = joystick_report_data[9];
-        UEDATX = joystick_report_data[10];
-        UEDATX = joystick_report_data[11];
-        UEINTX = 0x3A;
-        SREG = intr_state;
-}
-
-#endif
-
-
-
-static volatile uint8_t prev_byte=0;
-
 void usb_serial_class::begin(long speed)
 {
-	// make sure USB is initialized
-	usb_init();
-	uint16_t begin_wait = (uint16_t)millis();
-	while (1) {
-		if (usb_configuration) {
-			delay(200);  // a little time for host to load a driver
-			return;
-		}
-		if (usb_suspended) {
-			uint16_t begin_suspend = (uint16_t)millis();
-			while (usb_suspended) {
-				// must remain suspended for a while, because
-				// normal USB enumeration causes brief suspend
-				// states, typically under 0.1 second
-				if ((uint16_t)millis() - begin_suspend > 250) {
-					return;
-				}
-			}
-		}
-		// ... or a timout (powered by a USB power adaptor that
-		// wiggles the data lines to keep a USB device charging)
-		if ((uint16_t)millis() - begin_wait > 2500) return;
-	}
-	prev_byte = 0;
+	
 }
 
 void usb_serial_class::end()
 {
-	usb_shutdown();
-	delay(25);
+	
 }
 
 
@@ -585,97 +436,30 @@ void usb_serial_class::end()
 // number of bytes available in the receive buffer
 int usb_serial_class::available()
 {
-        uint8_t c;
-
-	c = prev_byte;  // assume 1 byte static volatile access is atomic
-	if (c) return 1;
-	c = readnext();
-	if (c) {
-		prev_byte = c;
-		return 1;
-	}
-	return 0;
+    return 0;
 }
 
 // get the next character, or -1 if nothing received
 int usb_serial_class::read()
 {
-	uint8_t c;
-
-	c = prev_byte;
-	if (c) {
-		prev_byte = 0;
-		return c;
-	}
-	c = readnext();
-	if (c) return c;
 	return -1;
 }
 
 int usb_serial_class::peek()
 {
-	uint8_t c;
-	
-	c = prev_byte;
-	if (c) return c;
-	c = readnext();
-	if (c) {
-		prev_byte = c;
-		return c;
-	}
 	return -1;
 }
 
 // get the next character, or 0 if nothing
 uint8_t usb_serial_class::readnext(void)
 {
-        uint8_t c, intr_state;
-
-        // interrupts are disabled so these functions can be
-        // used from the main program or interrupt context,
-        // even both in the same program!
-        intr_state = SREG;
-        cli();
-        if (!usb_configuration) {
-                SREG = intr_state;
-                return 0;
-        }
-        UENUM = DEBUG_RX_ENDPOINT;
-try_again:
-        if (!(UEINTX & (1<<RWAL))) {
-                // no packet in buffer
-                SREG = intr_state;
-                return 0;
-        }
-        // take one byte out of the buffer
-        c = UEDATX;
-	if (c == 0) {
-		// if we see a zero, discard it and
-		// discard the rest of this packet
-		UEINTX = 0x6B;
-		goto try_again;
-	}
-        // if this drained the buffer, release it
-        if (!(UEINTX & (1<<RWAL))) UEINTX = 0x6B;
-        SREG = intr_state;
-        return c;
+	return 0;
 }
 
 // discard any buffered input
 void usb_serial_class::flush()
 {
-        uint8_t intr_state;
 
-        if (usb_configuration) {
-                intr_state = SREG;
-                cli();
-		UENUM = DEBUG_RX_ENDPOINT;
-                while ((UEINTX & (1<<RWAL))) {
-                        UEINTX = 0x6B;
-                }
-                SREG = intr_state;
-        }
-	prev_byte = 0;
 }
 
 // transmit a character.
@@ -685,63 +469,7 @@ size_t usb_serial_class::write(uint8_t c)
 void usb_serial_class::write(uint8_t c)
 #endif
 {
-        //static uint8_t previous_timeout=0;
-        uint8_t timeout, intr_state;
-
-        // if we're not online (enumerated and configured), error
-        if (!usb_configuration) goto error;
-        // interrupts are disabled so these functions can be
-        // used from the main program or interrupt context,
-        // even both in the same program!
-        intr_state = SREG;
-        cli();
-        UENUM = DEBUG_TX_ENDPOINT;
-        // if we gave up due to timeout before, don't wait again
-#if 0
-	// this seems to be causig a lockup... why????
-        if (previous_timeout) {
-                if (!(UEINTX & (1<<RWAL))) {
-                        SREG = intr_state;
-                        return;
-                }
-                previous_timeout = 0;
-        }
-#endif
-        // wait for the FIFO to be ready to accept data
-        timeout = UDFNUML + TRANSMIT_TIMEOUT;
-        while (1) {
-                // are we ready to transmit?
-                if (UEINTX & (1<<RWAL)) break;
-                SREG = intr_state;
-                // have we waited too long?  This happens if the user
-                // is not running an application that is listening
-                if (UDFNUML == timeout) {
-                        //previous_timeout = 1;
-			goto error;
-		}
-                // has the USB gone offline?
-                if (!usb_configuration) goto error;
-                // get ready to try checking again
-                intr_state = SREG;
-                cli();
-                UENUM = DEBUG_TX_ENDPOINT;
-        }
-        // actually write the byte into the FIFO
-        UEDATX = c;
-        // if this completed a packet, transmit it now!
-        if (!(UEINTX & (1<<RWAL))) {
-		UEINTX = 0x3A;
-        	debug_flush_timer = 0;
-	} else {
-        	debug_flush_timer = TRANSMIT_FLUSH_TIMEOUT;
-	}
-        SREG = intr_state;
 #if ARDUINO >= 100
-	return 1;
-#endif
-error:
-#if ARDUINO >= 100
-	setWriteError();
 	return 0;
 #else
 	return;
@@ -757,24 +485,12 @@ error:
 // we can do is release the FIFO buffer for when the host wants it
 void usb_serial_class::send_now(void)
 {
-        uint8_t intr_state;
 
-        intr_state = SREG;
-        cli();
-        if (debug_flush_timer) {
-                UENUM = DEBUG_TX_ENDPOINT;
-		while ((UEINTX & (1<<RWAL))) {
-			UEDATX = 0;
-		}
-                UEINTX = 0x3A;
-                debug_flush_timer = 0;
-        }
-        SREG = intr_state;
 }
 
 uint32_t usb_serial_class::baud(void)
 {
-	return ((uint32_t)DEBUG_TX_SIZE * 10000 / DEBUG_TX_INTERVAL);
+	return (uint32_t) 640000;
 }
 
 uint8_t usb_serial_class::stopbits(void)
@@ -813,8 +529,4 @@ usb_serial_class::operator bool()
 
 usb_serial_class	Serial = usb_serial_class();
 usb_keyboard_class	Keyboard = usb_keyboard_class();
-usb_mouse_class		Mouse = usb_mouse_class();
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB1286__)
-usb_joystick_class	Joystick = usb_joystick_class();
-#endif
 
