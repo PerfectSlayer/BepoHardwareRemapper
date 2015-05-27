@@ -61,7 +61,7 @@ static const uint8_t PROGMEM device_descriptor[] = {
 	ENDPOINT0_SIZE,				// bMaxPacketSize0
 	LSB(VENDOR_ID), MSB(VENDOR_ID),		// idVendor
 	LSB(PRODUCT_ID), MSB(PRODUCT_ID),	// idProduct
-	0x05, 0x01,				// bcdDevice
+	0x21, 0x01,				// bcdDevice (original value: 0x05, 0x01)
 	0,					// iManufacturer
 	1,					// iProduct
 	0,					// iSerialNumber

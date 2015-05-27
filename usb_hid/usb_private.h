@@ -19,8 +19,9 @@ extern "C"{
 /* Custom identifiers: */
 /* VENDOR ID:	0x03F0	Hewlett Packard */
 /* PRODUCT ID:	0x0024	KU-0316 Keyboard */
-#define VENDOR_ID               0x16C0
-#define PRODUCT_ID              0x0482
+/* PRODUCT ID:	0x034A	KU-1156 Keyboard */
+#define VENDOR_ID               0x03F0
+#define PRODUCT_ID              0x034A
 #define TRANSMIT_FLUSH_TIMEOUT  4   /* in milliseconds */
 #define TRANSMIT_TIMEOUT        25   /* in milliseconds */
 
@@ -52,7 +53,7 @@ extern "C"{
 // computer unless the vendor or product ID numbers change, or the
 // "bcdDevice" revision code is increased.
 
-#define STR_PRODUCT             L"USB Keyboard"
+#define STR_PRODUCT             L"HP Elite USB Keyboard"
 #define ENDPOINT0_SIZE          64
 
 #define KEYBOARD_INTERFACE	0
